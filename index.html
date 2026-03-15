@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SUXRAT OVERLAY TEST - PLUS MAPS & FLASHLIGHT</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: #0a0f0f; 
+            color: #00ff9d; 
+            font-family: 'Courier New', monospace;
+            padding: 10px;
+            min-height: 100vh;
+        }
+        .container { max-width: 600px; margin: 0 auto; }
+        
+        .header { 
+            border: 3px solid #ff0066; 
+            padding: 15px; 
+            margin-bottom: 15px;
+            text-align: center;
+            background: #1a1f1f;
+            border-radius: 10px;
+        }
+        .header h1 { font-size: 28px; color: #ff0066; text-shadow: 0 0 10px #ff0066; }
+        .header .sub { color: #00ff9d; font-size: 12px; }
+        
+        .status-box {
+            border: 2px solid #00ff9d;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #1a1f1f;
+            border-radius: 10px;
+        }
+        
+        .permission-status {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            padding: 5px;
+            border-bottom: 1px solid #333;
+        }
+        .permission-name { color: #888; }
+        .permission-value { font-weight: bold; }
+        .granted { color: #00ff9d; }
+        .denied { color: #ff0066; }
+        .pending { color: #ff9900; }
+        
+        .tab-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+        .tab-btn {
+            flex: 1 0 auto;
+            padding: 12px 5px;
+            background: #0a0f0f;
+            border: 2px solid #00ff9d;
+            color: #00ff9d;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+        .tab-btn.active {
+            background: #00ff9d;
+            color: #0a0f0f;
+        }
+        
+        .panel {
+            border: 2px solid #00ff9d;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #1a1f1f;
+            border-radius: 10px;
+            display: none;
+        }
+        .panel.active-panel { display: block; }
+        .panel h2 { color: #ff0066; margin-bottom: 15px; font-size: 18px; }
+        
+        .camera-preview {
+            width: 100%;
+            height: 250px;
+            background: #0a0f0f;
+            border: 2px solid #00ff9d;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        #cameraFeed {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .live-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ff0066;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            animation: blink 1s infinite;
+        }
+        @keyframes blink { 50% { opacity: 0.5; } }
+        
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .action-btn {
+            padding: 15px 5px;
+            background: #0a0f0f;
+            border: 2px solid #00ff9d;
+            color: #00ff9d;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .action-btn.danger { border-color: #ff0066; color: #ff0066; }
+        .action-btn.warning { border-color: #ff9900; color: #ff9900; }
+        
+        .data-container, .message-display {
+            border: 1px solid #333;
+            background: #0a0f0f;
+            border-radius: 5px;
+            padding: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 12px;
+            margin-top: 10px;
+            color: #888;
+        }
+        
+        /* Style untuk fitur baru */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+        #locationResult {
+            margin-top: 15px;
+            padding: 10px;
+            background: #0a0f0f;
+            border: 1px solid #00ff9d;
+            border-radius: 5px;
+            color: #888;
+            font-size: 12px;
+            word-break: break-all;
+        }
+        #locationResult a { color: #ff0066; text-decoration: underline; }
+        #flashlightBtn.active { background: #ff9900; color: #0a0f0f; border-color: #ff9900; }
+        
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            background: #0a0f0f;
+            border: 2px solid #00ff9d;
+            color: #00ff9d;
+            font-family: 'Courier New', monospace;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .console {
+            border: 2px solid #00ff9d;
+            padding: 15px;
+            background: #1a1f1f;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+        .console-log {
+            height: 150px;
+            overflow-y: auto;
+            border: 1px solid #333;
+            padding: 10px;
+            background: #0a0f0f;
+            font-size: 11px;
+        }
+        .log-success { color: #00ff9d; }
+        .log-error { color: #ff0066; }
+        .log-info { color: #888; }
+        
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <h1>SURXRAT OVERLAY+</h1>
+            <div class="sub">🔴 ORIGINAL + MAPS & KELAP-KELIP</div>
+        </div>
+
+        <!-- STATUS PERMISSION -->
+        <div class="status-box">
+            <h3 style="color:#00ff9d; margin-bottom:10px;">📱 PERMISSION STATUS</h3>
+            <div class="permission-status">
+                <span class="permission-name">📸 Camera:</span>
+                <span class="permission-value pending" id="cameraStatus">Check...</span>
+            </div>
+            <div class="permission-status">
+                <span class="permission-name">🎤 Microphone:</span>
+                <span class="permission-value pending" id="micStatus">Check...</span>
+            </div>
+            <div class="permission-status">
+                <span class="permission-name">📍 Location:</span>
+                <span class="permission-value pending" id="locStatus">Check...</span>
+            </div>
+            <div class="permission-status">
+                <span class="permission-name">🔊 Audio Output:</span>
+                <span class="permission-value granted" id="audioStatus">Available</span>
+            </div>
+        </div>
+
+        <!-- TAB NAVIGASI -->
+        <div class="tab-container">
+            <button class="tab-btn active" onclick="switchTab('camera')">📸 CAMERA</button>
+            <button class="tab-btn" onclick="switchTab('overlay')">💬 OVERLAY</button>
+            <button class="tab-btn" onclick="switchTab('audio')">🎤 AUDIO</button>
+            <button class="tab-btn" onclick="switchTab('new')">✨ NEW</button>
+        </div>
+
+        <!-- ==================== PANEL CAMERA (ASLI) ==================== -->
+        <div id="cameraPanel" class="panel active-panel">
+            <h2>📸 CAMERA HACK</h2>
+            <div class="camera-preview">
+                <video id="cameraFeed" autoplay playsinline></video>
+                <div class="live-indicator" id="liveIndicator" style="display:none;">🔴 LIVE</div>
+            </div>
+            <div class="button-grid">
+                <button class="action-btn" onclick="startCamera('front')">📱 FRONT</button>
+                <button class="action-btn" onclick="startCamera('rear')">📷 REAR</button>
+                <button class="action-btn danger" onclick="stopCamera()">⏹️ STOP</button>
+                <button class="action-btn" onclick="capturePhoto()">📸 CAPTURE</button>
+                <button class="action-btn" onclick="toggleTorch()">🔦 TORCH</button>
+                <button class="action-btn" onclick="flipCamera()">🔄 FLIP</button>
+            </div>
+        </div>
+
+        <!-- ==================== PANEL OVERLAY (ASLI) ==================== -->
+        <div id="overlayPanel" class="panel">
+            <h2>💬 OVERLAY MESSAGE</h2>
+            <input type="text" id="overlayInput" class="input-field" placeholder="Ketik pesan...">
+            <div class="button-grid">
+                <button class="action-btn" onclick="showOverlay()">📤 TAMPILKAN</button>
+                <button class="action-btn" onclick="showNotification()">🔔 NOTIF</button>
+                <button class="action-btn danger" onclick="clearOverlay()">🗑️ HAPUS</button>
+            </div>
+            <div class="message-display" id="messageHistory">📜 History pesan akan muncul di sini</div>
+        </div>
+
+        <!-- ==================== PANEL AUDIO (ASLI) ==================== -->
+        <div id="audioPanel" class="panel">
+            <h2>🎤 AUDIO</h2>
+            <input type="text" id="ttsInput" class="input-field" placeholder="Teks untuk TTS...">
+            <div class="button-grid">
+                <button class="action-btn" onclick="speakText()">🔊 TTS</button>
+                <button class="action-btn" onclick="playBeep()">📢 BEEP</button>
+                <button class="action-btn" onclick="playAlarm()">🚨 ALARM</button>
+            </div>
+            <div style="margin-top:15px; border-top:1px solid #333; padding-top:15px;">
+                <div style="color:#ff0066; margin-bottom:10px;">🎙️ RECORD SUARA</div>
+                <div class="button-grid">
+                    <button class="action-btn" id="btnRecord" onclick="startRecording()">⏺️ RECORD</button>
+                    <button class="action-btn" id="btnStop" onclick="stopRecording()" disabled>⏹️ STOP</button>
+                    <button class="action-btn" onclick="playLastAudio()">🔊 PLAY</button>
+                </div>
+                <div class="visualizer" id="visualizer" style="width:100%; height:60px; background:#0a0f0f; border:1px solid #333; margin:10px 0; display:flex; align-items:center; justify-content:center; color:#888;">🎵 Audio visualizer</div>
+                <audio id="audioPlayback" controls style="width:100%; margin:10px 0; display:none;"></audio>
+            </div>
+        </div>
+
+        <!-- ==================== PANEL FITUR BARU ==================== -->
+        <div id="newPanel" class="panel">
+            <h2>✨ FITUR BARU</h2>
+            <div class="feature-grid">
+                <button class="action-btn" onclick="getLocationAndShowMap()">🗺️ LOKASI KE MAPS</button>
+                <button class="action-btn" onclick="toggleFlashlight()" id="flashlightBtn">🔦 SENTER KELAP-KELIP</button>
+            </div>
+            <div id="locationResult">
+                📍 Lokasi akan muncul di sini...
+            </div>
+        </div>
+
+        <!-- CONSOLE LOG -->
+        <div class="console">
+            <div class="console-log" id="consoleLog">
+                <div class="log-info">[SYSTEM] SURXRAT Plus - Original + Maps & Flashlight</div>
+            </div>
+        </div>
+
+        <div class="footer">Copyright © YutoriLiona • Tracker V13.0 • Enhanced Edition</div>
+    </div>
+
+    <!-- OVERLAY CONTAINER -->
+    <div id="overlayContainer" style="position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:9999;"></div>
+
+    <script>
+        // ==================== STATE & UTILITIES ====================
+        let cameraStream = null;
+        let currentCamera = 'front';
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let audioContext = null;
+        let lastAudioBlob = null;
+        let lastAudioUrl = null;
+        let speechSynth = window.speechSynthesis;
+        let flashlightInterval = null;
+        let torchSupported = false;
+
+        function addLog(message, type = 'info') {
+            const logDiv = document.getElementById('consoleLog');
+            const entry = document.createElement('div');
+            entry.className = `log-${type}`;
+            entry.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active-panel'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tab + 'Panel').classList.add('active-panel');
+            event.target.classList.add('active');
+        }
+
+        // ==================== PERMISSIONS ====================
+        async function checkPermissions() {
+            try {
+                const cam = await navigator.permissions.query({ name: 'camera' });
+                document.getElementById('cameraStatus').innerHTML = cam.state === 'granted' ? 'GRANTED' : 'DENIED';
+                document.getElementById('cameraStatus').className = 'permission-value ' + (cam.state === 'granted' ? 'granted' : 'denied');
+                
+                const mic = await navigator.permissions.query({ name: 'microphone' });
+                document.getElementById('micStatus').innerHTML = mic.state === 'granted' ? 'GRANTED' : 'DENIED';
+                document.getElementById('micStatus').className = 'permission-value ' + (mic.state === 'granted' ? 'granted' : 'denied');
+                
+                const geo = await navigator.permissions.query({ name: 'geolocation' });
+                document.getElementById('locStatus').innerHTML = geo.state === 'granted' ? 'GRANTED' : 'DENIED';
+                document.getElementById('locStatus').className = 'permission-value ' + (geo.state === 'granted' ? 'granted' : 'denied');
+            } catch (err) {
+                addLog('Permission check error: ' + err.message, 'error');
+            }
+        }
+
+        // ==================== CAMERA (ASLI) ====================
+        async function startCamera(type) {
+            try {
+                if (cameraStream) stopCamera();
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: type === 'front' ? 'user' : 'environment' },
+                    audio: false
+                });
+                cameraStream = stream;
+                document.getElementById('cameraFeed').srcObject = stream;
+                document.getElementById('liveIndicator').style.display = 'block';
+                currentCamera = type;
+                addLog(`✅ ${type} camera started`, 'success');
+            } catch (err) {
+                addLog('❌ Camera error: ' + err.message, 'error');
+            }
+        }
+
+        function stopCamera() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(t => t.stop());
+                cameraStream = null;
+                document.getElementById('cameraFeed').srcObject = null;
+                document.getElementById('liveIndicator').style.display = 'none';
+                addLog('⏹️ Camera stopped', 'info');
+            }
+        }
+
+        function capturePhoto() {
+            if (!cameraStream) { addLog('Start camera dulu!', 'error'); return; }
+            const video = document.getElementById('cameraFeed');
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            const link = document.createElement('a');
+            link.download = `photo_${Date.now()}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+            addLog('📸 Photo captured', 'success');
+        }
+
+        function toggleTorch() { addLog('Torch: Not supported in browser preview', 'warning'); }
+        function flipCamera() { startCamera(currentCamera === 'front' ? 'rear' : 'front'); }
+
+        // ==================== OVERLAY (ASLI) ====================
+        function showOverlay() {
+            const msg = document.getElementById('overlayInput').value || 'HALO';
+            const overlay = document.createElement('div');
+            overlay.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.8); z-index:9999;';
+            const box = document.createElement('div');
+            box.style.cssText = 'background:#ff0066; color:white; padding:40px 60px; border-radius:20px; font-size:48px; font-weight:bold; border:4px solid #00ff9d;';
+            box.textContent = msg;
+            overlay.appendChild(box);
+            document.getElementById('overlayContainer').appendChild(overlay);
+            setTimeout(() => overlay.remove(), 3000);
+            addLog(`📤 Overlay: "${msg}"`, 'success');
+        }
+
+        function showNotification() {
+            const msg = document.getElementById('overlayInput').value || 'NOTIF';
+            const notif = document.createElement('div');
+            notif.style.cssText = 'position:fixed; top:20px; right:20px; background:#00ff9d; color:black; padding:15px 25px; border-radius:10px; font-size:18px; font-weight:bold; z-index:10000;';
+            notif.textContent = msg;
+            document.body.appendChild(notif);
+            setTimeout(() => notif.remove(), 2000);
+            addLog(`🔔 Notification: "${msg}"`, 'info');
+        }
+
+        function clearOverlay() {
+            document.getElementById('overlayContainer').innerHTML = '';
+            document.getElementById('messageHistory').innerHTML = '📜 History pesan akan muncul di sini';
+            addLog('Overlay cleared', 'info');
+        }
+
+        // ==================== AUDIO (ASLI) ====================
+        function speakText() {
+            const text = document.getElementById('ttsInput').value || 'HALO';
+            if (speechSynth.speaking) speechSynth.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'id-ID';
+            utterance.onstart = () => addLog(`🔊 Speaking: "${text}"`, 'success');
+            utterance.onend = () => addLog('✅ Speech finished', 'info');
+            utterance.onerror = (e) => addLog(`❌ Speech error: ${e.error}`, 'error');
+            speechSynth.speak(utterance);
+        }
+
+        function playBeep() {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            osc.connect(ctx.destination);
+            osc.frequency.value = 800;
+            osc.start();
+            setTimeout(() => { osc.stop(); ctx.close(); }, 200);
+            addLog('🔊 Beep played', 'info');
+        }
+
+        function playAlarm() {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            for (let i = 0; i < 5; i++) {
+                const osc = ctx.createOscillator();
+                osc.connect(ctx.destination);
+                osc.frequency.value = 600 + i * 100;
+                osc.start(ctx.currentTime + i * 0.3);
+                osc.stop(ctx.currentTime + i * 0.3 + 0.2);
+            }
+            addLog('🚨 Alarm played', 'info');
+        }
+
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                recordedChunks = [];
+                mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+                    lastAudioBlob = blob;
+                    if (lastAudioUrl) URL.revokeObjectURL(lastAudioUrl);
+                    lastAudioUrl = URL.createObjectURL(blob);
+                    document.getElementById('audioPlayback').src = lastAudioUrl;
+                    document.getElementById('audioPlayback').style.display = 'block';
+                    addLog(`✅ Recording saved: ${(blob.size / 1024).toFixed(2)} KB`, 'success');
+                    stream.getTracks().forEach(t => t.stop());
+                };
+                mediaRecorder.start();
+                document.getElementById('btnRecord').disabled = true;
+                document.getElementById('btnStop').disabled = false;
+                addLog('🔴 Recording...', 'info');
+            } catch (err) { addLog('❌ Recording error: ' + err.message, 'error'); }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+                document.getElementById('btnRecord').disabled = false;
+                document.getElementById('btnStop').disabled = true;
+                addLog('⏹️ Recording stopped', 'info');
+            }
+        }
+
+        function playLastAudio() {
+            if (lastAudioUrl) { new Audio(lastAudioUrl).play(); addLog('🔊 Playing recorded audio', 'info'); }
+            else { addLog('No recording', 'error'); }
+        }
+
+        // ==================== FITUR BARU 1: LOKASI GOOGLE MAPS ====================
+        function getLocationAndShowMap() {
+            const resultDiv = document.getElementById('locationResult');
+            resultDiv.innerHTML = '📍 Mendapatkan lokasi...';
+            resultDiv.style.color = '#ff9900';
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        const acc = position.coords.accuracy;
+                        const mapsLink = `https://www.google.com/maps?q=${lat},${lng}`;
+                        resultDiv.innerHTML = `
+                            <span style="color: #00ff9d;">✅ Lokasi ditemukan!</span><br>
+                            <b>Lat:</b> ${lat}<br>
+                            <b>Lng:</b> ${lng}<br>
+                            <b>Akurasi:</b> ±${Math.round(acc)} m<br>
+                            <b>Maps:</b> <a href="${mapsLink}" target="_blank">${mapsLink}</a>
+                        `;
+                        resultDiv.style.color = '#00ff9d';
+                        addLog('📍 Lokasi didapat, buka link Maps', 'success');
+                    },
+                    (error) => {
+                        let errMsg = 'Gagal dapat lokasi';
+                        if (error.code === 1) errMsg = 'Izin lokasi ditolak.';
+                        else if (error.code === 2) errMsg = 'Lokasi tidak tersedia.';
+                        else if (error.code === 3) errMsg = 'Timeout.';
+                        resultDiv.innerHTML = `❌ ${errMsg}`;
+                        resultDiv.style.color = '#ff0066';
+                        addLog(`❌ Error lokasi: ${errMsg}`, 'error');
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                );
+            } else {
+                resultDiv.innerHTML = '❌ Geolocation tidak didukung.';
+                resultDiv.style.color = '#ff0066';
+            }
+        }
+
+        // ==================== FITUR BARU 2: SENTER KELAP-KELIP ====================
+        async function toggleFlashlight() {
+            const btn = document.getElementById('flashlightBtn');
+
+            if (flashlightInterval) {
+                // Matikan
+                clearInterval(flashlightInterval);
+                flashlightInterval = null;
+                btn.innerHTML = '🔦 SENTER KELAP-KELIP';
+                btn.classList.remove('active');
+                if (window.flashlightStream) {
+                    window.flashlightStream.getTracks().forEach(t => t.stop());
+                    window.flashlightStream = null;
+                }
+                addLog('🔦 Senter kelap-kelip dimatikan', 'info');
+                return;
+            }
+
+            // Nyalakan
+            addLog('🔦 Mengaktifkan senter...', 'info');
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'environment' }
+                });
+                const track = stream.getVideoTracks()[0];
+
+                if (track.getCapabilities().torch) {
+                    window.flashlightStream = stream;
+                    btn.innerHTML = '⏹️ MATIKAN SENTER';
+                    btn.classList.add('active');
+                    
+                    let torchState = false;
+                    flashlightInterval = setInterval(async () => {
+                        torchState = !torchState;
+                        try {
+                            await track.applyConstraints({ advanced: [{ torch: torchState }] });
+                        } catch (err) {
+                            addLog(`❌ Torch error: ${err.message}`, 'error');
+                            // Matikan jika error
+                            clearInterval(flashlightInterval);
+                            flashlightInterval = null;
+                            btn.innerHTML = '🔦 SENTER KELAP-KELIP';
+                            btn.classList.remove('active');
+                            stream.getTracks().forEach(t => t.stop());
+                            window.flashlightStream = null;
+                        }
+                    }, 500); // Kelap-kelip setiap 500ms
+                    
+                    addLog('✅ Senter kelap-kelip aktif', 'success');
+                } else {
+                    addLog('❌ HP tidak mendukung senter (torch)', 'error');
+                    stream.getTracks().forEach(t => t.stop());
+                }
+            } catch (err) {
+                addLog(`❌ Gagal akses kamera: ${err.message}`, 'error');
+            }
+        }
+
+        // ==================== INIT ====================
+        window.onload = function() {
+            addLog('╔════════════════════════════════╗', 'info');
+            addLog('║  SURXRAT PLUS - FINAL EDITION ║', 'info');
+            addLog('║  © YutoriLiona - Tracker       ║', 'info');
+            addLog('╚════════════════════════════════╝', 'info');
+            addLog('Fitur baru: Maps & Flashlight Blink', 'success');
+            checkPermissions();
+        };
+    </script>
+</body>
+</html>
